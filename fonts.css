@@ -1,0 +1,20 @@
+@font-face {
+    font-family: 'false';
+    src: url('123.eot');
+    src: url('123.eot?#iefix') format('embedded-opentype'),
+         url('123.woff') format('woff'),
+         url('123.ttf') format('truetype'),
+         url('123.svg#false') format('svg');
+    font-weight: false;
+    font-style: false;
+}
+@font-face {
+    font-family: 'false';
+    src: url('testing.eot');
+    src: url('testing.eot?#iefix') format('embedded-opentype'),
+         url('testing.woff') format('woff'),
+         url('testing.ttf') format('truetype'),
+         url('testing.svg#false') format('svg');
+    font-weight: false;
+    font-style: false;
+}
