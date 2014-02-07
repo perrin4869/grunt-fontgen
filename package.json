@@ -37,7 +37,14 @@
     "grunt": "~0.4.2"
   },
   "keywords": [
-    "gruntplugin"
+    "gruntplugin",
+    "fontface",
+    "webfonts",
+    "ttf",
+    "otf",
+    "svg",
+    "eot",
+    "css"
   ],
   "dependencies": {
     "execSync": "~1.0.1-pre"
