@@ -30,6 +30,8 @@ module.exports = function(grunt) {
         black:          '900',
     };
 
+    var embed = false;
+
     grunt.registerMultiTask('fontgen', 'Generate webfonts and css ready to use on your site', function() {
 
         setupEnv();
@@ -40,27 +42,55 @@ module.exports = function(grunt) {
             stylesheet: 'fonts.css',
         });
 
-        var processed_fonts = {};
+        embed = options.embed === true ? ['woff'] : optionToArray(options.embed, false);
 
+        var processed_fonts = {};
+        var dest = '';
         // Iterate over all specified file groups.
         this.files.forEach(function(f) {
-
-            createDestinationDirectory(f.dest);
-
             f.src.filter(function(filepath) {
-
+                var fontdir = filepath.split('/').pop().split('.')[0];
+                dest = f.dest;
+                createDestinationDirectory(f.dest+'/'+fontdir);
                 // Warn about, but ignore missing files
                 if (!grunt.file.exists(filepath)) {
                     grunt.log.warn('Source file "' + filepath + '" not found.');
                     return false;
                 }
-
-                merge(processed_fonts, generateFontToDestination(filepath, f.dest));
+                merge(processed_fonts, generateFontToDestination(filepath, f.dest+'/'+fontdir));
             });
         });
 
-        generateStylesheet(processed_fonts, options);
+        generateStylesheet(processed_fonts, options, dest);
     });
+
+    function optionToArray(val, defVal) {
+        if (val === undefined) val = defVal;
+        if (!val) return [];
+        if (typeof val !== 'string') return val;
+        if (val.indexOf(',') !== -1) {
+            return val.split(',');
+        }
+        else {
+            return [val];
+        }
+    }
+
+    function has(haystack, needle) {
+        return haystack.indexOf(needle) !== -1;
+    }
+
+    // Convert font file to data:uri and *remove* source file.
+    function embedFont(fontFile) {
+        // Convert to data:uri
+        var dataUri = fs.readFileSync(fontFile, 'base64');
+        var type = path.extname(fontFile).substring(1);
+        var fontUrl = 'data:application/x-font-' + type + ';charset=utf-8;base64,' + dataUri;
+        // Remove WOFF file
+        fs.unlinkSync(fontFile);
+
+        return fontUrl;
+    }
 
     var setupEnv = function() {
 
@@ -215,20 +245,33 @@ module.exports = function(grunt) {
         return result;
     }
 
-    function generateStylesheet(fonts, options) {
+    function generateStylesheet(fonts, options, dest) {
         var result = '';
         for (var filename in fonts) {
             if (fonts.hasOwnProperty(filename)) {
                 var config = fonts[filename];
+                var relFontDir = options.path_prefix + filename + '/' + filename;
+                var absFontDir = dest+'/'+filename+'/'+filename;
 
                 result +=
                     "@font-face {\n" +
                     "    font-family: '" + config.name + "';\n" +
-                    "    src: url('" + options.path_prefix + filename + ".eot');\n" +
-                    "    src: url('" + options.path_prefix + filename + ".eot?#iefix') format('embedded-opentype'),\n" +
-                    "         url('" + options.path_prefix + filename + ".woff') format('woff'),\n" +
-                    "         url('" + options.path_prefix + filename + ".ttf') format('truetype'),\n" +
-                    "         url('" + options.path_prefix + filename + ".svg#" + config.name + "') format('svg');\n" +
+                    "    src: url('" + relFontDir + ".eot');\n" +
+                    "    src: url('" + relFontDir + ".eot?#iefix') format('embedded-opentype'),\n";
+
+                if (has(embed, 'woff')) {
+                    result += "         url(" + embedFont(absFontDir + ".woff")+") format('woff'),\n"
+                }
+                else {
+                    result += "         url('" + relFontDir + ".woff') format('woff'),\n";
+                }
+                if (has(embed, 'ttf')) {
+                    result += "         url(" + embedFont(absFontDir + ".ttf")+") format('truetype'),\n"
+                }
+                else {
+                    result += "         url('" + relFontDir + ".ttf') format('truetype'),\n";
+                }
+                    result += "         url('" + relFontDir + ".svg#" + config.name + "') format('svg');\n" +
                     "    font-weight: " + config.weight + ";\n" +
                     "    font-style: " + config.style + ";\n" +
                     "}\n";
