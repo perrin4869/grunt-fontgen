@@ -1,7 +1,7 @@
 {
   "name": "grunt-fontgen",
   "description": "Generate webfonts and css ready to use on your site",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "homepage": "https://github.com/agentk/grunt-fontgen",
   "author": {
     "name": "Karl Bowden",
@@ -47,6 +47,6 @@
     "css"
   ],
   "dependencies": {
-    "fontfacegen": "^0.1.2"
+    "fontfacegen": "^0.1.3"
   }
 }
