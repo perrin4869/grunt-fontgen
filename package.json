@@ -42,6 +42,6 @@
     "css"
   ],
   "dependencies": {
-    "fontfacegen": "^0.1.10"
+    "fontfacegen": "^0.1.11"
   }
 }
